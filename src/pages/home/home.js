@@ -134,7 +134,7 @@ const Home = () => {
                 for(let jud of judges) {
                     if (rate.Judge === jud._id && jud.category === 'E5') {
                         e5 = rate.score;
-                        del=++;
+                        del++;
                     }
                 }
             }
@@ -144,12 +144,13 @@ const Home = () => {
                 for(let jud of judges) {
                     if (rate.Judge === jud._id && jud.category === 'E6') {
                         e6 = rate.score;
+                        del++;
                     }
                 }
             }
         }
 
-        return (e3 + e4 + e5 + e6) / 4
+        return (e3 + e4 + e5 + e6) / Math.max(1, del)
     }
 
     const getSumOfUser = (member) => {
