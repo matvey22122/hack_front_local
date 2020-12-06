@@ -48,17 +48,17 @@ export const ApiState = ({children}) => {
 
     const nextMember = async () => {
         try {
-            const data = await axios.post(`${process.env.REACT_APP_BASE_URL}/secretary/next_member`)
-
+            const res = await axios.post(`${process.env.REACT_APP_BASE_URL}/secretary/next_member`)
+            return res
         } catch (e) {
             console.log(e)
         }
     }
 
-    const logoutJudge = async () => {
+    const logoutJudge = async (login) => {
         try {
-            const data = await axios.post(`${process.env.REACT_APP_BASE_URL}/secretary/judge_logout`)
-
+            const res = await axios.post(`${process.env.REACT_APP_BASE_URL}/secretary/judge_logout`, {login})
+            return res
         } catch (e) {
             console.log(e)
         }

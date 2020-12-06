@@ -1,12 +1,15 @@
-import React, {useContext, useEffect, Fragment} from 'react'
+import React, {useContext, useEffect, Fragment, useState} from 'react'
 import {Button} from "antd";
 import {ApiContext} from "../../context/ApiContext";
-import {Table} from "react-bootstrap";
+import {Modal, Table} from "react-bootstrap";
 
 const Home = () => {
-    const {isStarted, startstartCompetition, members, judges, ratings, nextMember, logoutJudge, getMembers,
+    const {isStarted, startCompetition, members, judges, ratings, nextMember, logoutJudge, getMembers,
         getJudges,
         getRatings} = useContext(ApiContext)
+
+    const [show, setShow] = useState(false)
+    const [member, setMember] = useState({})
 
     useEffect(() => {
         const fetchData = async () => {
@@ -20,7 +23,6 @@ const Home = () => {
         fetchData()
     })
 
-    const getRat = async () => await getRatings;
 
     const getSumD1D2 = (member) => {
         let del = 0;
@@ -157,16 +159,43 @@ const Home = () => {
         return getSumD1D2(member) + getSumE1E2(member) + getSumD3D4(member) + getSumE3E4E5E6(member)
     }
 
+    const getSummOfJudge = (judg) => {
+        for(let rate of ratings) {
+            if (rate.Judge === judg._id) {
+                return rate.score
+            }
+        }
+    }
+
     return (
         <div>
             {isStarted //TODO: поменять на !isStarted
-            ? <Button onClick={() => startstartCompetition()}>Начать соревнование</Button>
+            ? <Button onClick={() => startCompetition()}>Начать соревнование</Button>
             : <Fragment>
-                    {JSON.stringify(members)}
-                    {JSON.stringify(judges)}
-                    {JSON.stringify(ratings)}
                     <Button onClick={() => getRatings()}>Обновить результаты</Button>
-                    <Button onClick={() => nextMember()}>Следующий участник</Button>
+                    <Button style={{marginBottom: 20}} onClick={() => nextMember()}>Следующий участник</Button>
+                  <br/>
+                  <Table style={{marginBottom: 20}} striped bordered hover>
+                      <thead>
+                      <tr>
+                          <th>Судья</th>
+                          <th>Категория</th>
+                          <th>Выйти</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {judges.map((judg, i) => {
+                          return (
+                            <tr>
+                                <td>{judg.fio}</td>
+                                <td>{judg.category}</td>
+                                <td><Button onClick={() => logoutJudge(judg.login)}>Выйти из аккаунта</Button></td>
+                            </tr>
+                          )
+                      })}
+                      </tbody>
+                  </Table>
+                  <br/>
                     <Table striped bordered hover>
                         <thead>
                         <tr>
@@ -176,10 +205,11 @@ const Home = () => {
                         </tr>
                         </thead>
                         <tbody>
+                        {/*//TODO: сдесь показывать кто скок баллов поставил D..E...*/}
                         {members.map((mem, i) => {
                             return (
                                 <tr>
-                                    <td>{mem.fio}</td>
+                                    <td><Button onClick={() => setMember(mem)}>{mem.fio}</Button></td>
                                     <td>{getSumOfUser(mem)}</td>
                                     <td>{getSumOfUser(mem)}</td>
                                 </tr>
@@ -187,6 +217,56 @@ const Home = () => {
                         })}
                         </tbody>
                     </Table>
+                  <Modal show={Object.keys(member).length > 0}>
+                      <Modal.Header closeButton>
+                          <Modal.Title>Результаты выступления {member.fio}</Modal.Title>
+                      </Modal.Header>
+                      <Modal.Body>
+                          <Table striped bordered hover>
+                              <thead>
+                              <tr>
+                                  <th>Группа судей</th>
+                                  <th>Кол-во баллов</th>
+                              </tr>
+                              </thead>
+                              <tbody>
+                              <tr>
+                                  <td>D1 D2</td>
+                                  <td>{getSumD1D2(member)}</td>
+                              </tr>
+                              <tr>
+                                  <td>D3 D4</td>
+                                  <td>{getSumD3D4(member)}</td>
+                              </tr>
+                              <tr>
+                                  <td>Общая оценка за трудность</td>
+                                  <td>{getSumD1D2(member) + getSumD3D4(member)}</td>
+                              </tr>
+                              <tr>
+                                  <td>E1 E2</td>
+                                  <td>{getSumE1E2(member)}</td>
+                              </tr>
+                              <tr>
+                                  <td>E3 E4 E5 E6</td>
+                                  <td>{getSumE3E4E5E6(member)}</td>
+                              </tr>
+                              <tr>
+                                  <td>Общая оценка за исполнение</td>
+                                  <td>{getSumE1E2(member) + getSumE3E4E5E6(member)}</td>
+                              </tr>
+                              <tr>
+                                  <td>Сумма баллов</td>
+                                  <td>{getSumOfUser(member)}</td>
+                              </tr>
+                              </tbody>
+                          </Table>
+                      </Modal.Body>
+                      <Modal.Footer>
+                          <Button variant="secondary" onClick={() => setMember({})}>
+                              Close
+                          </Button>
+                      </Modal.Footer>
+                  </Modal>
                 </Fragment>
             }
         </div>
